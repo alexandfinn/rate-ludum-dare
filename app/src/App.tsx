@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Star, Shuffle, Gamepad2, Joystick } from "lucide-react";
+import { Gamepad2, Joystick, Shuffle, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 import gameData from "../../scripts/web-games.json";
 
 type Game = (typeof gameData.games)[0];
