@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Star, Shuffle, Gamepad2 } from "lucide-react";
@@ -14,20 +14,50 @@ const sponsoredGame = gameData.games.find(game => game.id === 412629);
 
 export default function App() {
   const [currentGame, setCurrentGame] = useState<Game>(randomGame);
+  const [nextGame, setNextGame] = useState<Game | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+
+  // Function to preload an image
+  const preloadImage = (game: Game) => {
+    if (game.meta.cover) {
+      const img = new Image();
+      img.src = `https://static.jam.host${game.meta.cover.replace(/^\/\//, "")}.480x384.fit.jpg`;
+    }
+  };
+
+  // Function to get a random game
+  const getRandomGame = () => {
+    if (clickCount % 3 === 2 && sponsoredGame) {
+      return sponsoredGame;
+    }
+    const randomIndex = Math.floor(Math.random() * gamesWithCovers.length);
+    return gamesWithCovers[randomIndex];
+  };
 
   // Function to show a random game
   const showRandomGame = () => {
     setClickCount(prev => prev + 1);
     
-    if (clickCount % 3 === 2 && sponsoredGame) {
-      setCurrentGame(sponsoredGame);
+    // Set the current game to the preloaded next game
+    if (nextGame) {
+      setCurrentGame(nextGame);
     } else {
-      const randomIndex = Math.floor(Math.random() * gamesWithCovers.length);
-      setCurrentGame(gamesWithCovers[randomIndex]);
+      setCurrentGame(getRandomGame());
     }
+    
+    // Preload the next game
+    const newNextGame = getRandomGame();
+    setNextGame(newNextGame);
+    preloadImage(newNextGame);
   };
+
+  // Initialize next game on component mount
+  useEffect(() => {
+    const initialNextGame = getRandomGame();
+    setNextGame(initialNextGame);
+    preloadImage(initialNextGame);
+  }, []);
 
   // Function to handle playing the game
   const playGame = () => {
