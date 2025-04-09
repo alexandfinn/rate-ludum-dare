@@ -10,15 +10,23 @@ type Game = typeof gameData.games[0];
 const gamesWithCovers = gameData.games.filter(game => game.meta.cover);
 
 const randomGame = gamesWithCovers[Math.floor(Math.random() * gamesWithCovers.length)];
+const sponsoredGame = gameData.games.find(game => game.id === 412629);
 
 export default function App() {
   const [currentGame, setCurrentGame] = useState<Game>(randomGame);
   const [isHovering, setIsHovering] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
 
   // Function to show a random game
   const showRandomGame = () => {
-    const randomIndex = Math.floor(Math.random() * gameData.games.length);
-    setCurrentGame(gameData.games[randomIndex]);
+    setClickCount(prev => prev + 1);
+    
+    if (clickCount % 3 === 2 && sponsoredGame) {
+      setCurrentGame(sponsoredGame);
+    } else {
+      const randomIndex = Math.floor(Math.random() * gamesWithCovers.length);
+      setCurrentGame(gamesWithCovers[randomIndex]);
+    }
   };
 
   // Function to handle playing the game
@@ -45,8 +53,13 @@ export default function App() {
           onMouseLeave={() => setIsHovering(false)}
           onClick={rateGame}
         >
+          {currentGame.id === 412629 && (
+            <div className="absolute top-4 right-4 bg-teal-400 text-violet-900 px-3 py-1 rounded-full text-sm font-bold z-10">
+              Sponsored - I created this game 😊
+            </div>
+          )}
           <img
-            src={`https://static.jam.host${currentGame.meta.cover.replace(
+            src={`https://static.jam.host${currentGame.meta.cover?.replace(
               /^\/\//,
               ""
             )}.480x384.fit.jpg`}
