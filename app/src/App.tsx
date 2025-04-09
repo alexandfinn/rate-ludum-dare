@@ -73,7 +73,7 @@ export default function App() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-24 bg-gradient-to-br from-violet-400 to-violet-600">
       <h1 className="mb-8 text-4xl font-bold text-white drop-shadow-sm flex items-center gap-2">
         <Gamepad2 className="h-8 w-8" />
-        Ludum Dare 57 Games
+        Ludum Dare 57 Web Games
       </h1>
 
       <Card className="w-full max-w-2xl overflow-hidden border border-teal-300 rounded-xl shadow-lg">
