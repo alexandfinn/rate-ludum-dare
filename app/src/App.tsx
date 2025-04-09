@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Star, Shuffle, Gamepad2 } from "lucide-react";
-import gameData from "../../scripts/itch-games.json";
+import { Play, Star, Shuffle, Gamepad2, Joystick } from "lucide-react";
+import gameData from "../../scripts/web-games.json";
 
 type Game = (typeof gameData.games)[0];
 
@@ -67,7 +67,7 @@ export default function App() {
 
   // Function to handle playing the game
   const playGame = () => {
-    window.open(currentGame.itchioLink, "_blank");
+    window.open(currentGame.link, "_blank");
   };
 
   // Function to handle rating
@@ -118,15 +118,15 @@ export default function App() {
             <div className="flex flex-col sm:flex-row gap-4 justify-between">
               <Button
                 onClick={playGame}
-                className="flex-1 bg-teal-400 hover:bg-teal-500 text-violet-900 font-bold py-3 transition-transform hover:scale-105 border-none"
+                className="flex-1 bg-teal-400 hover:bg-teal-500 text-violet-900 font-bold py-3 transition-transform hover:scale-105 border-none cursor-pointer"
               >
-                <Play className="h-5 w-5 mr-2" />
-                Play on itch.io
+                <Joystick className="h-5 w-5 mr-2" />
+                Play in the browser
               </Button>
               <Button
                 onClick={rateGame}
                 variant="outline"
-                className="flex-1 bg-violet-400 hover:bg-violet-500 text-white border-none border-teal-300 font-bold py-3 transition-transform hover:scale-105"
+                className="flex-1 bg-violet-400 hover:bg-violet-500 text-white border-none border-teal-300 font-bold py-3 transition-transform hover:scale-105 cursor-pointer"
               >
                 <Star className="h-5 w-5 mr-2" />
                 Rate on LDJAM
@@ -135,7 +135,7 @@ export default function App() {
             <Button
               onClick={showRandomGame}
               variant="secondary"
-              className="bg-teal-400 hover:bg-teal-500 text-violet-900 border-none font-bold py-3 transition-transform hover:scale-105"
+              className="bg-teal-400 hover:bg-teal-500 text-violet-900 border-none font-bold py-3 transition-transform hover:scale-105 cursor-pointer"
             >
               <Shuffle className="h-5 w-5 mr-2" />
               Next Random Game
