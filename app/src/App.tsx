@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gamepad2, Joystick, Shuffle, Star } from "lucide-react";
+import { Gamepad2, Joystick, Shuffle, Star, History } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import gameData from "../../scripts/web-games.json";
 
 type Game = (typeof gameData.games)[0];
@@ -13,12 +14,22 @@ const randomGame =
   gamesWithCovers[Math.floor(Math.random() * gamesWithCovers.length)];
 const sponsoredGame = gameData.games.find((game) => game.id === 412629);
 
+// Function to add a game to seen games
+const addSeenGame = (game: Game) => {
+  const seenIds = JSON.parse(localStorage.getItem("seenGameIds") || "[]");
+  if (!seenIds.includes(game.id)) {
+    seenIds.push(game.id);
+    localStorage.setItem("seenGameIds", JSON.stringify(seenIds));
+  }
+};
+
 export default function App() {
   const [currentGame, setCurrentGame] = useState<Game>(randomGame);
   const [nextGame, setNextGame] = useState<Game | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [hasShownSponsored, setHasShownSponsored] = useState(false);
+  const [seenGameIds, setSeenGameIds] = useState<number[]>([]);
 
   // Function to preload an image
   const preloadImage = (game: Game) => {
@@ -31,31 +42,58 @@ export default function App() {
     }
   };
 
-  // Function to get a random game
+  // Load seen game IDs on component mount
+  useEffect(() => {
+    const ids = JSON.parse(localStorage.getItem("seenGameIds") || "[]");
+    setSeenGameIds(ids);
+    
+    // Check if sponsored game is already in seen list
+    if (sponsoredGame && ids.includes(sponsoredGame.id)) {
+      setHasShownSponsored(true);
+    }
+  }, []);
+
+  // Function to get a random game that hasn't been seen
   const getRandomGame = () => {
-    if (clickCount === 1 && sponsoredGame && !hasShownSponsored) {
+    if (clickCount === 1 && sponsoredGame && !hasShownSponsored && !seenGameIds.includes(sponsoredGame.id)) {
       setHasShownSponsored(true);
       return sponsoredGame;
     }
-    const randomIndex = Math.floor(Math.random() * gamesWithCovers.length);
-    return gamesWithCovers[randomIndex];
+
+    // Filter out games that have already been seen
+    const unseenGames = gamesWithCovers.filter(
+      (game) => !seenGameIds.includes(game.id)
+    );
+
+    // If all games have been seen, reset to all games
+    const gamesToChooseFrom =
+      unseenGames.length > 0 ? unseenGames : gamesWithCovers;
+
+    const randomIndex = Math.floor(Math.random() * gamesToChooseFrom.length);
+    return gamesToChooseFrom[randomIndex];
   };
 
   // Function to show a random game
   const showRandomGame = () => {
-    setClickCount((prev) => prev + 1);
-
     // Set the current game to the preloaded next game
     if (nextGame) {
       setCurrentGame(nextGame);
+      addSeenGame(nextGame);
+      setSeenGameIds((prev) => [...prev, nextGame.id]);
     } else {
-      setCurrentGame(getRandomGame());
+      const newGame = getRandomGame();
+      setCurrentGame(newGame);
+      addSeenGame(newGame);
+      setSeenGameIds((prev) => [...prev, newGame.id]);
     }
 
     // Preload the next game
     const newNextGame = getRandomGame();
     setNextGame(newNextGame);
     preloadImage(newNextGame);
+
+    // Increment click count after getting the next game
+    setClickCount((prev) => prev + 1);
   };
 
   // Initialize next game on component mount
@@ -63,6 +101,8 @@ export default function App() {
     const initialNextGame = getRandomGame();
     setNextGame(initialNextGame);
     preloadImage(initialNextGame);
+    addSeenGame(initialNextGame);
+    setSeenGameIds((prev) => [...prev, initialNextGame.id]);
   }, []);
 
   // Function to handle playing the game
@@ -91,7 +131,7 @@ export default function App() {
         >
           {currentGame.id === 412629 && (
             <div className="absolute top-4 right-4 bg-teal-400 text-violet-900 px-3 py-1 rounded-full text-sm font-bold z-10">
-              Sponsored - I created this game 😊
+              "Sponsored" - I created this game 😊
             </div>
           )}
           <img
@@ -143,6 +183,14 @@ export default function App() {
           </div>
         </CardContent>
       </Card>
+      <Link
+        to="/history"
+        className="mt-6 text-white hover:text-teal-300 transition-colors flex items-center gap-2"
+      >
+        <History className="h-5 w-5" />
+        View Game History (
+        {JSON.parse(localStorage.getItem("seenGameIds") || "[]").length})
+      </Link>
     </main>
   );
 }
