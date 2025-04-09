@@ -8,20 +8,6 @@ async function findItchioGames() {
 
     const gamesWithItchio = games
       .filter((game) => {
-        // Check meta links (link-01, link-02, etc)
-        const hasItchioInMeta = Object.entries(game.meta || {}).some(
-          ([key, value]) => {
-            return (
-              key.startsWith("link-") &&
-              typeof value === "string" &&
-              value.includes("itch.io")
-            );
-          }
-        );
-
-        // Check body content
-        const hasItchioInBody = game.body && game.body.includes("itch.io");
-
         // Check for link tag containing 42336
         const hasRequiredTag = Object.entries(game.meta || {}).some(
           ([key, value]) => {
@@ -33,33 +19,23 @@ async function findItchioGames() {
           }
         );
 
-        return (hasItchioInMeta || hasItchioInBody) && hasRequiredTag;
+        return hasRequiredTag;
       })
       .map((game) => {
-        // Find the itch.io link
-        let itchioLink = "";
+        // Find the link associated with the required tag
+        let link = "";
 
-        // First check meta links
+        // Check meta links
         if (game.meta) {
           for (const [key, value] of Object.entries(game.meta)) {
-            if (
-              key.startsWith("link-") &&
-              typeof value === "string" &&
-              value.includes("itch.io")
-            ) {
-              itchioLink = value;
-              break;
+            if (key.startsWith("link-") && typeof value === "string") {
+              // Check if this link has the required tag
+              const tagKey = key.replace("link-", "link-") + "-tag";
+              if (game.meta[tagKey] && Array.isArray(game.meta[tagKey]) && game.meta[tagKey].includes(42336)) {
+                link = value;
+                break;
+              }
             }
-          }
-        }
-
-        // If not found in meta, try to extract from body
-        if (!itchioLink && game.body) {
-          const matches = game.body.match(
-            /https?:\/\/[^\s<>"]+?itch\.io\/[^\s<>"]+/g
-          );
-          if (matches && matches.length > 0) {
-            itchioLink = matches[0];
           }
         }
 
@@ -70,7 +46,7 @@ async function findItchioGames() {
           body: game.body,
           meta: game.meta,
           path: game.path,
-          itchioLink,
+          link,
         };
       });
 
@@ -81,7 +57,7 @@ async function findItchioGames() {
     );
 
     console.log(
-      `Found ${gamesWithItchio.length} games with itch.io links and required tag`
+      `Found ${gamesWithItchio.length} games with required tag`
     );
     console.log("Saved to itch-games.json");
   } catch (error) {
