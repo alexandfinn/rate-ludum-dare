@@ -4,31 +4,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play, Star, Shuffle, Gamepad2 } from "lucide-react";
 import gameData from "../../scripts/itch-games.json";
 
-type Game = typeof gameData.games[0];
+type Game = (typeof gameData.games)[0];
 
 // Filter games to only include those with cover images
-const gamesWithCovers = gameData.games.filter(game => game.meta.cover);
+const gamesWithCovers = gameData.games.filter((game) => game.meta.cover);
 
-const randomGame = gamesWithCovers[Math.floor(Math.random() * gamesWithCovers.length)];
-const sponsoredGame = gameData.games.find(game => game.id === 412629);
+const randomGame =
+  gamesWithCovers[Math.floor(Math.random() * gamesWithCovers.length)];
+const sponsoredGame = gameData.games.find((game) => game.id === 412629);
 
 export default function App() {
   const [currentGame, setCurrentGame] = useState<Game>(randomGame);
   const [nextGame, setNextGame] = useState<Game | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [hasShownSponsored, setHasShownSponsored] = useState(false);
 
   // Function to preload an image
   const preloadImage = (game: Game) => {
     if (game.meta.cover) {
       const img = new Image();
-      img.src = `https://static.jam.host${game.meta.cover.replace(/^\/\//, "")}.480x384.fit.jpg`;
+      img.src = `https://static.jam.host${game.meta.cover.replace(
+        /^\/\//,
+        ""
+      )}.480x384.fit.jpg`;
     }
   };
 
   // Function to get a random game
   const getRandomGame = () => {
-    if (clickCount % 3 === 2 && sponsoredGame) {
+    if (clickCount === 1 && sponsoredGame && !hasShownSponsored) {
+      setHasShownSponsored(true);
       return sponsoredGame;
     }
     const randomIndex = Math.floor(Math.random() * gamesWithCovers.length);
@@ -37,15 +43,15 @@ export default function App() {
 
   // Function to show a random game
   const showRandomGame = () => {
-    setClickCount(prev => prev + 1);
-    
+    setClickCount((prev) => prev + 1);
+
     // Set the current game to the preloaded next game
     if (nextGame) {
       setCurrentGame(nextGame);
     } else {
       setCurrentGame(getRandomGame());
     }
-    
+
     // Preload the next game
     const newNextGame = getRandomGame();
     setNextGame(newNextGame);
@@ -97,9 +103,13 @@ export default function App() {
             className="w-full h-auto object-cover"
           />
           <div
-            className={`absolute inset-0 bg-gradient-to-t from-violet-600/70 to-transparent flex items-end transition-opacity duration-300 ${isHovering ? "opacity-100" : "opacity-80"}`}
+            className={`absolute inset-0 bg-gradient-to-t from-violet-600/70 to-transparent flex items-end transition-opacity duration-300 ${
+              isHovering ? "opacity-100" : "opacity-80"
+            }`}
           >
-            <h2 className="text-white text-2xl font-bold p-6">{currentGame.name}</h2>
+            <h2 className="text-white text-2xl font-bold p-6">
+              {currentGame.name}
+            </h2>
           </div>
         </div>
 
